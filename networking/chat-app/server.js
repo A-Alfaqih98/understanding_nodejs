@@ -22,6 +22,7 @@ const server = net.createServer((socket) => {
 // Socket is one endpoint of a two-way communication link between two programs running on the network
 // endpoint is a combination of an IP address and a port number.
 server.on('connection', (socket) => {
+  console.log(socket.remotePort);
   console.log('New Connection');
 });
 
