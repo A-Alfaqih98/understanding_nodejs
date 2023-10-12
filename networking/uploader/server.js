@@ -2,19 +2,22 @@ const net = require('net');
 const fs = require('fs/promises');
 
 const server = net.createServer((_socket) => {});
-let fileHandle, fileStream;
 
 server.on('connection', async (socket) => {
+  let fileHandle, fileStream;
   console.log('New connection');
 
   socket.on('data', async (data) => {
     if (!fileHandle) {
       socket.pause();
-      fileHandle = await fs.open('./storage/test.txt', 'w');
+      const indexOfDeivider = data.indexOf('-----');
+      const fileName = data.subarray(10, indexOfDeivider);
+
+      fileHandle = await fs.open(`./storage/${fileName}`, 'w');
       fileStream = fileHandle.createWriteStream();
       socket.resume();
 
-      fileStream.write(data);
+      fileStream.write(data.subarray(indexOfDeivider + 5));
 
       fileStream.on('drain', () => {
         socket.resume();
@@ -27,7 +30,7 @@ server.on('connection', async (socket) => {
   });
 
   socket.on('end', () => {
-    fileHandle.close();
+    if (fileHandle) fileHandle.close();
     fileHandle = undefined;
     fileStream = undefined;
     console.log('Connection ended');
